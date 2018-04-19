@@ -29,4 +29,4 @@ _ReSharper*
 *.orig
 ._*
 .vs
-
+packages/*
