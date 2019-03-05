@@ -8,6 +8,10 @@ namespace RedisForUcommerce
 {
     public class RedisSessionProvider : SessionProvider
     {
+        public RedisSessionProvider()
+        {
+            
+        }
         [Mandatory]
         public string RedisConnectionString { get; set; }
 
@@ -24,8 +28,6 @@ namespace RedisForUcommerce
                     Serializer = new NhJsonCacheSerializer(),
                 };
                 RedisCacheProvider.SetOptions(options);
-
-                
             }
             
             var sessionFactory = base.CreateSessionFactory(enableCache, cacheProvider);
