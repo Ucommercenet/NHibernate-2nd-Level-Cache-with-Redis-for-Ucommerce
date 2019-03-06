@@ -36,7 +36,7 @@ namespace RedisForUcommerce.Logger
 
         public void Error(object message)
         {
-            if (_onlyLogCacheHits) return;
+            if (ShouldBreak(message.ToString())) return;
 
             LoggingService.Log<UCommerceNHibernateLogger>($"ERROR: { message.ToString() }");
             var stackTrace = Environment.StackTrace;
@@ -45,7 +45,8 @@ namespace RedisForUcommerce.Logger
 
         public void Error(object message, Exception exception)
         {
-            if (_onlyLogCacheHits) return;
+            if (ShouldBreak(message.ToString())) return;
+
 
             var stackTrace = Environment.StackTrace;
             LoggingService.Log<UCommerceNHibernateLogger>($"ERROR: { message.ToString() }");
@@ -55,7 +56,7 @@ namespace RedisForUcommerce.Logger
 
         public void ErrorFormat(string format, params object[] args)
         {
-            if (_onlyLogCacheHits) return;
+            if (ShouldBreak(format.ToString())) return;
 
             LoggingService.Log<UCommerceNHibernateLogger>($"ErrorFormat {string.Format(format, args) }");
             var stackTrace = Environment.StackTrace;
@@ -65,7 +66,7 @@ namespace RedisForUcommerce.Logger
 
         public void Fatal(object message)
         {
-            if (_onlyLogCacheHits) return;
+            if (ShouldBreak(message.ToString())) return;
 
             var stackTrace = Environment.StackTrace;
             LoggingService.Log<UCommerceNHibernateLogger>($"Fatal: { message.ToString() }");
@@ -74,7 +75,7 @@ namespace RedisForUcommerce.Logger
 
         public void Fatal(object message, Exception exception)
         {
-            if (_onlyLogCacheHits) return;
+            if (ShouldBreak(message.ToString())) return;
 
             var stackTrace = Environment.StackTrace;
             LoggingService.Log<UCommerceNHibernateLogger>($"Fatal: { message.ToString() }");
@@ -84,7 +85,7 @@ namespace RedisForUcommerce.Logger
 
         public void Debug(object message)
         {
-            if (_onlyLogCacheHits && !message.ToString().ToLower().Contains("cache")) return;
+            if (ShouldBreak(message.ToString())) return;
 
             var stackTrace = Environment.StackTrace;
             LoggingService.Log<UCommerceNHibernateLogger>($"Debug: { message.ToString() }");
@@ -93,7 +94,7 @@ namespace RedisForUcommerce.Logger
 
         public void Debug(object message, Exception exception)
         {
-            if (_onlyLogCacheHits && !message.ToString().ToLower().Contains("cache")) return;
+            if (ShouldBreak(message.ToString())) return;
 
             var stackTrace = Environment.StackTrace;
             LoggingService.Log<UCommerceNHibernateLogger>($"Debug: { message.ToString() }");
@@ -101,9 +102,16 @@ namespace RedisForUcommerce.Logger
             LoggingService.Log<UCommerceNHibernateLogger>(stackTrace);
         }
 
+        private bool ShouldBreak(string message)
+        {
+            string messageInternal = message.ToLower();
+            return _onlyLogCacheHits &&
+                   !((messageInternal.StartsWith("get from cache") || messageInternal.StartsWith("cache miss")));
+        }
+
         public void DebugFormat(string format, params object[] args)
         {
-            if (_onlyLogCacheHits && !format.ToString().ToLower().Contains("cache")) return;
+            if (ShouldBreak(format)) return;
 
             LoggingService.Log<UCommerceNHibernateLogger>($"DebugFormat {string.Format(format, args) }");
             var stackTrace = Environment.StackTrace;
@@ -112,17 +120,16 @@ namespace RedisForUcommerce.Logger
 
         public void Info(object message)
         {
-            if (_onlyLogCacheHits) return;
+            if (ShouldBreak(message.ToString())) return;
 
             var stackTrace = Environment.StackTrace;
             LoggingService.Log<UCommerceNHibernateLogger>($"Info: { message.ToString() }");
             LoggingService.Log<UCommerceNHibernateLogger>(stackTrace);
-
         }
 
         public void Info(object message, Exception exception)
         {
-            if (_onlyLogCacheHits) return;
+            if (ShouldBreak(message.ToString())) return;
 
             var stackTrace = Environment.StackTrace;
             LoggingService.Log<UCommerceNHibernateLogger>($"Info: { message.ToString() }");
@@ -132,7 +139,7 @@ namespace RedisForUcommerce.Logger
 
         public void InfoFormat(string format, params object[] args)
         {
-            if (_onlyLogCacheHits) return;
+            if (ShouldBreak(format.ToString())) return;
 
             LoggingService.Log<UCommerceNHibernateLogger>($"InfoFormat {string.Format(format, args) }");
             var stackTrace = Environment.StackTrace;
@@ -142,7 +149,7 @@ namespace RedisForUcommerce.Logger
 
         public void Warn(object message)
         {
-            if (_onlyLogCacheHits) return;
+            if (ShouldBreak(message.ToString())) return;
 
             var stackTrace = Environment.StackTrace;
             LoggingService.Log<UCommerceNHibernateLogger>($"Warn: { message.ToString() }");
@@ -151,7 +158,7 @@ namespace RedisForUcommerce.Logger
 
         public void Warn(object message, Exception exception)
         {
-            if (_onlyLogCacheHits) return;
+            if (ShouldBreak(message.ToString())) return;
 
             LoggingService.Log<UCommerceNHibernateLogger>($"Warn {message.ToString() }");
             var stackTrace = Environment.StackTrace;
@@ -160,7 +167,7 @@ namespace RedisForUcommerce.Logger
 
         public void WarnFormat(string format, params object[] args)
         {
-            if (_onlyLogCacheHits) return;
+            if (ShouldBreak(format.ToString())) return;
 
             LoggingService.Log<UCommerceNHibernateLogger>($"DebugFormat {string.Format(format, args) }");
             var stackTrace = Environment.StackTrace;
