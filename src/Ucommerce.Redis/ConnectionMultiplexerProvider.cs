@@ -13,7 +13,7 @@ namespace Ucommerce.Redis
         {
             lock (_lock)
             {
-                return ConnectionMultiplexer.Connect(configuration);
+                return ConnectionMultiplexer.Connect("localhost:6379,allowAdmin=true,abortConnect=false");
             }
         }
     }
