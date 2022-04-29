@@ -35,7 +35,10 @@ namespace Ucommerce.Redis.Serializer
             return _explicitTypes.Contains(objectType);
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object ReadJson(JsonReader reader,
+                                        Type objectType,
+                                        object existingValue,
+                                        JsonSerializer serializer)
         {
             // CanRead is false.
             throw new NotImplementedException();

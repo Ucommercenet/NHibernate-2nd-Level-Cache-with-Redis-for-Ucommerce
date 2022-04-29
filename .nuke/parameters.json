@@ -1,4 +1,4 @@
 {
     "$schema": "./build.schema.json",
-    "Solution": "src/lib.ucommerce.redis/lib.ucommerce.redis.sln"
+    "Solution": "src/lib.ucommerce.redis.sln"
   }

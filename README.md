@@ -58,45 +58,23 @@ Finally, to register the redis cache provider add a new property to a custom .co
 
 ### Install via Application
 
-Create a folder in Ucommerce\Apps\RedisForUcommerce on the website.
-Copy NHibernate.Caches.Redis.dll, RedisForUcommerce.dll, StackExchange.Redis.dll and RedisForUcommerce.config to the folder.
-Include pdb files if needed.
+An Application in Ucommerce is a set of dynamic loaded dll's and a configuration file, Applications are stored in the path `~\Ucommerce\Apps\*`. If you are running a completely new Ucommerce there will be installed some default Applications, Redis is not one of them.
 
-Remove the default syscache from web.config:
+To use Ucommerce.Redis as an Application you will have to clone this repository and build/pack it yourself. We have tried to make it easy, so everything should be setup and ready to build. What you need for that tasks:
 
-	<section name="syscache" type="NHibernate.Caches.SysCache.SysCacheSectionHandler, NHibernate.Caches.SysCache2, Version=3.3.1.4000, Culture=neutral, PublicKeyToken=6876f2ea66c9f443" requirePermission="false"/>
-	
-and
-	
-	<syscache>
-    	<!-- Cache catalog objects for 60 mins before refreshing -->
-    	<cache region="CatalogFoundation" expiration="3600" priority="5"/>
-    	<cache region="MarketingFoundation" expiration="3600" priority="5"/>
-    	<cache region="SecurityFoundation" expiration="3600" priority="5"/>
-  	</syscache>
-	
-Change the web.config commerce section:
+1. Clone this repository to your PC
+2. Install [.NET framework 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48) 
+3. Install [.NET 6](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+4. (Optional) Install [Nuke](https://nuke.build/) as en extension to your IDE
 
-	<commerce>
-    <runtimeConfiguration enableCache="true" cacheProvider="NHibernate.Caches.SysCache2.SysCacheProvider, NHibernate.Caches.SysCache2, Version=3.3.1.4000, Culture=neutral, PublicKeyToken=6876f2ea66c9f443" connectionString="???"/>
+After all the installation there is three ways to build and pack this extension to Ucommerce.
 
-to
+1. Use the build scripts in the root of this repository. (build.cmd, build.ps1 and build.sh)
+2. Use the Nuke extension in your IDE, open the solution and browse to `build.cs` in the _build.csproj. Here you could run the package command
+3. This way is a little harder, you can just build the project and gather the dll's an create the config file yourself.
 
-	<commerce>
-    <runtimeConfiguration enableCache="true" cacheProvider="NHibernate.Caches.Redis.RedisCacheProvider, 
-    NHibernate.Caches.Redis" connectionString="???"/>
-	
-In web.config add assembly redirects:
+When you have your Redis Application ready (you can find it in `~\.nuke\temp\dist`) copy it to the Application folder in Ucommerce `~\Ucommerce\Apps\*`. If you postfix it with `.disabled` the application will be disabled. Hint this can be used to fallback to the syscache in development and then have a deploy script to remove the `.disabled` in production.
 
-	<dependentAssembly>
-		<assemblyIdentity name="Iesi.Collections" publicKeyToken="aa95f207798dfdb4" culture="neutral"/>
-		<bindingRedirect oldVersion="0.0.0.0-4.0.0.0" newVersion="4.0.0.0"/>
-	</dependentAssembly>
-	
-	<dependentAssembly>
-		<assemblyIdentity name="NHibernate" publicKeyToken="aa95f207798dfdb4"  culture="neutral"/>
-		<bindingRedirect oldVersion="0.0.0.0-4.0.0.4000" newVersion="4.0.0.4000"/>
-	</dependentAssembly>
 	
 ## Test it in a Windows Environment
 

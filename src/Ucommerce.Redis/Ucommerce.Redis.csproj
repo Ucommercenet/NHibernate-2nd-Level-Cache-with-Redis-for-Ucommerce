@@ -5,8 +5,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Configuration\Redis.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Configuration\Redis.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentNHibernate" Version="2.1.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NHibernate.Caches.StackExchangeRedis" Version="5.7.0" />
+    <PackageReference Include="System.Buffers" Version="4.5.0" />
     <PackageReference Include="uCommerce.Core" Version="9.6.3.22094" />
   </ItemGroup>
 

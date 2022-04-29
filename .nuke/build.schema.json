@@ -73,7 +73,9 @@
             "enum": [
               "Clean",
               "Compile",
+              "GatherFiles",
               "Lint",
+              "Package",
               "Restore"
             ]
           }
@@ -90,7 +92,9 @@
             "enum": [
               "Clean",
               "Compile",
+              "GatherFiles",
               "Lint",
+              "Package",
               "Restore"
             ]
           }
