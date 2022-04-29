@@ -1,8 +1,8 @@
 ﻿using NHibernate;
 using NHibernate.Caches.Redis;
 using StackExchange.Redis;
-using UCommerce.EntitiesV2;
-using UCommerce.Infrastructure.Components.Windsor;
+using Ucommerce.EntitiesV2;
+using Ucommerce.Infrastructure.Components.Windsor;
 
 namespace RedisForUcommerce
 {

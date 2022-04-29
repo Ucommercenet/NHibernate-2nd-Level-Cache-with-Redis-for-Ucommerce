@@ -24,16 +24,14 @@ and
     	<cache region="SecurityFoundation" expiration="3600" priority="5"/>
   	</syscache>
 	
-Change the web.config commerce section:
+Change the Ucommerce\Configuration\Settings\Settings.config cacheProvider section:
 
 	<commerce>
-    <runtimeConfiguration enableCache="true" cacheProvider="NHibernate.Caches.SysCache2.SysCacheProvider, NHibernate.Caches.SysCache2, Version=3.3.1.4000, Culture=neutral, PublicKeyToken=6876f2ea66c9f443" connectionString="???"/>
+    <cacheProvider>NHibernate.Caches.SysCache.SysCacheProvider, NHibernate.Caches.SysCache, Version=3.3.1.4000, Culture=neutral, PublicKeyToken=6876f2ea66c9f443" connectionString="???"</cacheProvider>
 
 to
 
-	<commerce>
-    <runtimeConfiguration enableCache="true" cacheProvider="NHibernate.Caches.Redis.RedisCacheProvider, 
-    NHibernate.Caches.Redis" connectionString="???"/>
+	<cacheProvider>NHibernate.Caches.Redis.RedisCacheProvider, NHibernate.Caches.Redis</cacheProvider>
 	
 In web.config add assembly redirects:
 
