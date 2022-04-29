@@ -1,0 +1,157 @@
+trigger:
+  branches:
+    include:
+      - develop
+      - main
+      - "release/*"
+  tags:
+    include:
+      - "*"
+
+pr:
+  branches:
+    include:
+      - develop
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - name: pnpmStore
+    value: $(Agent.TempDirectory)/.pnpm-store
+  - name: NUGET_PACKAGES
+    value: $(Agent.TempDirectory)/.nuget/packages
+  - name: packageJsonPath
+    value: src/Ucommerce.Web.BackOffice.Client/package.json
+  - name: pnpmLockFilePath
+    value: src/Ucommerce.Web.BackOffice.Client/pnpm-lock.yaml
+
+stages:
+  - stage: Build_Test
+    jobs:
+      - job: Lint
+        steps:
+          - template: templates/dotnet-setup.yml
+
+          # pnpm as a tool is required by Nuke though not used
+          - template: templates/pnpm-setup.yml
+            parameters:
+              # We are not installing NPM packages when linting
+              cachePackages: 'false'
+
+          - bash: |
+              ./build.sh \
+              Lint \
+              --Configuration Release \
+            displayName: Lint Solution
+
+          - publish: artifacts/reports/inspection.xml
+            artifact: inspectionxml
+
+      - job: Pack
+        steps:
+          - template: templates/dotnet-setup.yml
+
+          - template: templates/pnpm-setup.yml
+            parameters:
+              cachePackages: 'true'
+              usePackageJson: 'true'
+              packageJsonPath: ${{ variables.packageJsonPath }}
+              pnpmLockFilePath: ${{ variables.pnpmLockFilePath }}
+
+          - bash: |
+              ./build.sh \
+              BuildClient \
+              PackNuGet \
+              PublishDocumentation \
+              --skip Lint \
+              --Configuration Release \
+              --ArtifactsAccessToken $(System.AccessToken)
+            displayName: Build And Test Solution
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: ./artifacts
+              artifact: artifacts
+
+  - stage: Publish
+    dependsOn: Build_Test
+    condition: "and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))"
+    jobs:
+      - job: Publish_NuGet
+        steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: artifacts
+              targetPath: '$(Build.SourcesDirectory)/artifacts'
+              itemPattern: "**/*.nupkg"
+
+          - template: templates/dotnet-setup.yml
+
+          # pnpm as a tool is required by Nuke though not used
+          - template: templates/pnpm-setup.yml
+            parameters:
+              # We are not installing NPM packages when just publishing
+              cachePackages: 'false'
+
+          - bash: |
+              ./build.sh \
+              PushToCIFeed \
+              --skip \
+              --Configuration Release \
+              --ArtifactsAccessToken $(System.AccessToken)
+            displayName: Publish NuGet Packages
+
+      - job: Publish_Client
+        steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: artifacts
+              targetPath: '$(Build.SourcesDirectory)/artifacts'
+              itemPattern: "client/**/*"
+
+          - template: templates/dotnet-setup.yml
+
+          # pnpm as a tool is required by Nuke though not used
+          - template: templates/pnpm-setup.yml
+            parameters:
+              # We are not installing NPM packages when just publishing
+              cachePackages: 'false'
+
+          - bash: |
+              ./build.sh \
+              PublishClient \
+              --skip \
+              --Configuration Release \
+              --ArtifactsAccessToken $(System.AccessToken)
+            displayName: Publish Client To CI Feed
+
+  - stage: Deploy_Demo_Docs
+    displayName: Deploy Demo/Docs Site
+    dependsOn: Build_Test
+    condition: "and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))"
+    jobs:
+      - deployment: Deploy_Documentation
+        displayName: Deploy Demo/Docs Site
+        environment: Demo Docs
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadPipelineArtifact@2
+                  inputs:
+                    artifactName: artifacts
+                    targetPath: '$(Build.SourcesDirectory)/artifacts'
+                    itemPattern: documentation-site.zip
+                - task: AzureRmWebAppDeployment@4
+                  inputs:
+                    ConnectionType: 'AzureRM'
+                    azureSubscription: 'Ucommerce(45813e54-619c-4c0f-ac98-b91a9494caf5)'
+                    appType: 'webApp'
+                    WebAppName: 'ucommerce10-dev-demo'
+                    deployToSlotOrASE: true
+                    ResourceGroupName: 'ucommerce10-dev-demo'
+                    SlotName: 'production'
+                    packageForLinux: '$(Build.SourcesDirectory)/artifacts/documentation-site.zip'
+                    enableCustomDeployment: true
+                    DeploymentType: 'runFromZip'

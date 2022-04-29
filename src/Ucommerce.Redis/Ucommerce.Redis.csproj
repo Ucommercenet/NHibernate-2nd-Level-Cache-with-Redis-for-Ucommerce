@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net48</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="NHibernate.Caches.StackExchangeRedis" Version="5.7.0" />
+    <PackageReference Include="uCommerce.Core" Version="9.6.3.22094" />
+  </ItemGroup>
+
+</Project>

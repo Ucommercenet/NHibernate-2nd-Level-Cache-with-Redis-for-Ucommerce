@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32126.317
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ucommerce.Redis", "Ucommerce.Redis\Ucommerce.Redis.csproj", "{AA5841C6-4FB4-4D47-BDCE-921394A67A65}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "..\build\_build.csproj", "{9F9EA32E-2951-454C-8EF4-24A3C7FFF5BE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AA5841C6-4FB4-4D47-BDCE-921394A67A65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA5841C6-4FB4-4D47-BDCE-921394A67A65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA5841C6-4FB4-4D47-BDCE-921394A67A65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA5841C6-4FB4-4D47-BDCE-921394A67A65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F9EA32E-2951-454C-8EF4-24A3C7FFF5BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F9EA32E-2951-454C-8EF4-24A3C7FFF5BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F9EA32E-2951-454C-8EF4-24A3C7FFF5BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F9EA32E-2951-454C-8EF4-24A3C7FFF5BE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {881A832A-4AAA-47D0-AB6F-5ABF113F8886}
+	EndGlobalSection
+EndGlobal

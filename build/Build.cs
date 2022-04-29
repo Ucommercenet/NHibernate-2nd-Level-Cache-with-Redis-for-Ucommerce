@@ -1,0 +1,104 @@
+using System;
+using System.Linq;
+using System.Xml.Linq;
+using Nuke.Common;
+using Nuke.Common.CI;
+using Nuke.Common.Execution;
+using Nuke.Common.Git;
+using Nuke.Common.IO;
+using Nuke.Common.ProjectModel;
+using Nuke.Common.Tooling;
+using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Tools.GitVersion;
+using Nuke.Common.Tools.ReSharper;
+using Nuke.Common.Utilities.Collections;
+using Serilog;
+using static Nuke.Common.IO.FileSystemTasks;
+using static Nuke.Common.Tools.DotNet.DotNetTasks;
+
+[CheckBuildProjectConfigurations]
+[ShutdownDotNetAfterServerBuild]
+class Build : NukeBuild
+{
+    [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
+    readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
+
+    [GitRepository] readonly GitRepository GitRepository;
+    [GitVersion(NoFetch = true, DisableOnUnix = true)] readonly GitVersion GitVersion;
+
+    [Solution] readonly Solution Solution;
+    AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
+
+    Target Clean => _ => _
+                         .Before(Restore)
+                         .Executes(() =>
+                                   {
+                                       SourceDirectory.GlobDirectories("**/bin", "**/obj")
+                                                      .ForEach(DeleteDirectory);
+                                       EnsureCleanDirectory(ArtifactsDirectory);
+                                   });
+
+
+    Target Compile =>
+        _ => _
+             .DependsOn(Restore)
+             .Executes(() =>
+                       {
+                           DotNetMSBuild(s => s
+                                              .SetTargetPath(Solution)
+                                              .SetTargets("Rebuild")
+                                              .SetConfiguration(Configuration)
+                                              .SetMaxCpuCount(Environment.ProcessorCount)
+                                              .SetAssemblyVersion(GitVersion.AssemblySemVer)
+                                              .SetFileVersion(GitVersion.AssemblySemFileVer)
+                                              .SetInformationalVersion(GitVersion.InformationalVersion)
+                                              .SetNodeReuse(IsLocalBuild));
+                       });
+
+    Target Lint =>
+        _ => _
+             .DependsOn(Compile)
+             .Executes(() =>
+                       {
+                           ReSharperTasks.ReSharperInspectCode(s => s.SetTargetPath(Solution)
+                                                                     .SetSettings(SourceDirectory
+                                                                         / $"{Solution.Name}.sln.DotSettings")
+                                                                     .SetOutput(TemporaryDirectory / "inspection.xml")
+                                                                     .SetSeverity(ReSharperSeverity.WARNING)
+                                                                     .SetNoSwea(Continue)
+                                                                     .SetProcessArgumentConfigurator(a =>
+                                                                         a.Add("--no-build")));
+
+                           var issues = XDocument.Load(TemporaryDirectory / "inspection.xml")
+                                                 .Element("Report")
+                                                 ?.Element("Issues")
+                                                 ?.Elements("Project")
+                                                 .Elements("Issue")
+                                                 .Where(issue => issue.Attribute("TypeId")
+                                                                      ?.Value != "UnusedAutoPropertyAccessor.Global")
+                                                 .Where(issue => issue.Attribute("TypeId")
+                                                                      ?.Value != "InvalidXmlDocComment")
+                                                 .Where(issue => issue.Attribute("TypeId")
+                                                                      ?.Value != "CSharpWarnings::CS1591");
+
+                           var count = issues?.Count() ?? int.MaxValue;
+                           issues.ForEach(issue => Log.Error(issue.ToString()));
+                           Assert.True(count == 0, "Linting failed");
+                       });
+
+    Target Restore => _ => _
+                          .Executes(() =>
+                                    {
+                                        DotNetRestore(s => s
+                                                          .SetProjectFile(Solution));
+                                    });
+
+    AbsolutePath SourceDirectory => RootDirectory / "src";
+
+    /// Support plugins are available for:
+    ///   - JetBrains ReSharper        https://nuke.build/resharper
+    ///   - JetBrains Rider            https://nuke.build/rider
+    ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
+    ///   - Microsoft VSCode           https://nuke.build/vscode
+    public static int Main() => Execute<Build>(x => x.Compile);
+}
