@@ -1,0 +1,65 @@
+trigger:
+  branches:
+    include:
+      - develop
+      - main
+      - "release/*"
+  tags:
+    include:
+      - "*"
+
+pr:
+  branches:
+    include:
+      - develop
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - name: pnpmStore
+    value: $(Agent.TempDirectory)/.pnpm-store
+  - name: NUGET_PACKAGES
+    value: $(Agent.TempDirectory)/.nuget/packages
+
+stages:
+  - stage: Build_Test
+    jobs:
+      - job: Lint
+        steps:
+          - template: templates/dotnet-setup.yml
+
+          # pnpm as a tool is required by Nuke though not used
+          - template: templates/pnpm-setup.yml
+            parameters:
+              # We are not installing NPM packages when linting
+              cachePackages: 'false'
+
+          - bash: |
+              ./build.sh \
+              Lint \
+              --Configuration Release \
+            displayName: Lint Solution
+
+          - publish: artifacts/reports/inspection.xml
+            artifact: inspectionxml
+
+      - job: Pack
+        steps:
+          - template: templates/dotnet-setup.yml
+
+          - template: templates/pnpm-setup.yml
+            parameters:
+              cachePackages: 'false'
+
+          - bash: |
+              ./build.sh \
+              package \
+              --Configuration Release \
+              --ArtifactsAccessToken $(System.AccessToken)
+            displayName: Build And Test Solution
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: ./artifacts
+              artifact: artifacts

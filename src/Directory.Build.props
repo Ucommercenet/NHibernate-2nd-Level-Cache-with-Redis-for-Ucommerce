@@ -1,0 +1,18 @@
+<Project>
+  <PropertyGroup>
+    <ParentDirectoryBuildPropsPath>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props'))</ParentDirectoryBuildPropsPath>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageProjectUrl>"https://ucommerce.net"</PackageProjectUrl>
+    <Copyright>Copyright (c) Ucommerce ApS $([System.DateTime]::Now.ToString(yyyy))</Copyright>
+    <Authors>Ucommerce Contributors</Authors>
+    <PackageTags>ucommerce;headless;ecommerce;api</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(ParentDirectoryBuildPropsPath)\..\..\build\icon.png"
+          Visible="false">
+      <PackagePath />
+      <Pack>true</Pack>
+    </None>
+  </ItemGroup>
+</Project>

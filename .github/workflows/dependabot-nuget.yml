@@ -1,0 +1,32 @@
+# https://github.com/dependabot/dependabot-core/issues/1303
+name: Dependabot-nuget
+on:
+  pull_request_target:
+    paths:
+      - "**/*.csproj"
+permissions: read-all
+jobs:
+  update-nuget-lockfile:
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - uses: actions/setup-dotnet@v2.0.0
+        with:
+          dotnet-version: 6.0.x
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Install Artifacts Credential Provider
+        run: wget -qO- https://aka.ms/install-artifacts-credprovider.sh | bash
+      - run: dotnet restore --force-evaluate
+        working-directory: src/
+      - run: |
+          git config --global user.name github-actions[bot]
+          git config --global user.email github-actions[bot]@users.noreply.github.com
+          git add "**/packages.lock.json"
+          git commit -m "Update packages.lock.json files"
+          git push

@@ -1,0 +1,24 @@
+##
+# Common Steps used to set up for running Nuke targets
+# Usage example:
+# 
+# steps:
+#   - template: templates/dotnet-setup.yml
+##
+steps:
+  - task: UseDotNet@2
+    displayName: Use .NET 6
+    inputs:
+      packageType: sdk
+      version: 6.0.x
+
+  - task: Cache@2
+    displayName: Cache NuGet Packages
+    inputs:
+      key: 'nuget | "$(Agent.OS)" | src/**/packages.lock.json,build/_build.csproj,!**/bin/**,!**/obj/**'
+      restoreKeys: |
+        nuget | "$(Agent.OS)"
+        nuget
+      path: '$(NUGET_PACKAGES)'
+
+  - task: NuGetAuthenticate@0
